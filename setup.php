@@ -8,6 +8,24 @@
         <h3>Database setup...</h3>
         <?php
 
+            require_once "Role.php";
+            require_once "PrivilegedMember.php";
+
+            $ok = false;
+
+            session_start();
+            if (isset($_SESSION["user"])) {
+                $user = PrivilegedMember::getByUsername($_SESSION["user"]);
+                if ($user && $user->hasPrivilege("Run SQL")) {
+                    $ok = true;
+                }
+            }
+
+            if (!$ok) {
+                echo "Permission denied to run this script!";
+                die();
+            }
+
             createTable("members",
                 "id INT UNSIGNED AUTO_INCREMENT,
                 user VARCHAR(16),
@@ -52,6 +70,11 @@
             createTable("roles",
                 "id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 role_name VARCHAR(50) NOT NULL"
+            );
+
+            createTable("permissions",
+                "id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                perm_desc VARCHAR(50) NOT NULL"
             );
 
             createTable("role_perm",

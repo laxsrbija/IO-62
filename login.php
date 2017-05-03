@@ -1,46 +1,57 @@
 <?php
-	require_once 'header.php';
-	$user = $pass = $error = '';
-	if(isset($_POST['user'])){
-		$user = sanitizeString($_POST['user']);
-		$pass = sanitizeString($_POST['pass']);
-		if($user == '' || $pass == ''){
-			$error = "Not all fields were entered<br>";
-		}
-		else{
-			$hpass = hash('ripemd128', "$salt1$pass$salt2");
-			$result = queryDBO("SELECT * FROM members WHERE user = '$user'");
-			if($result->num_rows == 0){
-				$error = "<span class='error'>Username invalid</span><br>";
-			}
-			else{
-				$row = $result->fetch_assoc();
-				if($row['pass'] != $hpass){
-					$error = "<span class='error'>Password invalid</span><br>";
-				}
-				else{
-					$id = $row['id'];
-					$_SESSION['id'] = $id;
-					$_SESSION['user'] = $user;
-					die("You are now logged in. Please <a href='members.php?view=$id'>click here</a> to continue.<br>");
-				}
-			}
-		}
-	}
+
+require_once "header.php";
+
+if (isset($_SESSION["id"])) {
+    header('Location: index.php');
+}
+
+$user = $pass = $error = "";
+
+if (isset($_POST["user"])) {
+    $user = sanitizeString($_POST["user"]);
+    $pass = $_POST["pass"];
+    if ($user == "" || $pass == "") {
+        $error = "Not all fields were entered<br><br>";
+    } else {
+        $hpass = hash("ripemd128", "$salt1$pass$salt2");
+        $result = queryDBO("select * from members where user = '$user'");
+        if ($result->num_rows == 0) {
+            $error = "<span class='error'>User not found</span><br><br>";
+        } else {
+            $row = $result->fetch_assoc();
+            if ($row["pass"] != $hpass) {
+                $error = "<span class='error'>Invalid password</span><br><br>";
+            } else {
+                $id = $row["id"];
+                $_SESSION["id"] = $id;
+                $_SESSION["user"] = $user;
+                $error = "Successfully logged in.<br>Please <a href='index.php?view=$id'>click here</a> to continue.<br><br>";
+            }
+        }
+    }
+}
+
+displayGuestMessage(isset($_SESSION["id"]));
+
 ?>
-	
-		<form method="post" action="login.php">
-			<?php echo $error ?>
-			<br>
-			<label class="fieldname" for="user">Username</label>
-			<input type="text" name="user" id="user" value="<?php echo $user?>" maxlength="16"><br>
-			
-			<label class="fieldname" for="pass">Password</label>
-			<input type="password" name="pass" id="pass" value="<?php echo $pass?>" maxlength="16"><br>
-			
-			<label class="fieldname">&nbsp;</label> <!-- za poravnanje -->
-			<input type="submit" value="Log in">
-			
-		</form>
-	</body>
+<h4><?php echo $error ?></h4>
+<?php
+
+if (!isset($_SESSION["id"])) {
+    echo '<form method="post" action="">
+                    
+                    <label class="fieldname" for="user">Username:</label>
+                    <input type="text" name="user" id="user" value="" maxlength="16">
+                    <br>
+                    <label class="fieldname" for="pass">Password:</label>
+                    <input type="password" name="pass" id="pass" value="" maxlength="64">
+                    <br>
+                    <label class="fieldname">&nbsp;</label>
+                    <input type="submit" value="Log in">
+                </form>';
+}
+
+?>
+</body>
 </html>

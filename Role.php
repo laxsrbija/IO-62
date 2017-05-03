@@ -13,7 +13,7 @@
             $role = new Role();
             $sql = "SELECT t2.perm_desc FROM role_perm AS t1 
               LEFT JOIN permissions AS t2 ON t1.perm_id = t2.id WHERE t1.role_id = $role_id";
-            $result = queryDB($sql);
+            $result = queryDBO($sql);
             while ($row = $result->fetch_assoc()) {
                 $role->permissions[$row["perm_desc"]] = true;
             }
